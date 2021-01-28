@@ -2,19 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Xml.Serialization;
+using System.Xml;
+using System.Xml.Schema;
 
-public class World
+public class World : IXmlSerializable
 {
     Tile[,] tiles;
     List<Character> characters;
+    public List<InstalledObject> installedObjects;
 
     //used for pathfinding
     public Path_TileGraph tileGraph;
 
     Dictionary<string, InstalledObject> installedObjectPrototypes;
 
-    public int Width { get; }
-    public int Height { get; }
+    public int Width { get; protected set; }
+    public int Height { get; protected set; }
 
     Action<InstalledObject> InstalledObjectChanged;
     Action<Tile> TileChanged;
@@ -24,6 +28,11 @@ public class World
     public JobQueue jobQueue;
 
     public World(int width = 100, int height = 100)
+    {
+        SetupWorld(width, height);
+    }
+
+    void SetupWorld(int width, int height)
     {
         jobQueue = new JobQueue();
 
@@ -46,6 +55,7 @@ public class World
         CreateInstalledObjectPrototypes();
 
         characters = new List<Character>();
+        installedObjects = new List<InstalledObject>();
     }
 
     public void Update(float deltaTime)
@@ -93,15 +103,15 @@ public class World
         int l = Width / 2 - 5;
         int b = Height / 2 - 5;
 
-        for (int x = l-5; x < l + 15; x++)
+        for (int x = l - 5; x < l + 15; x++)
         {
-            for (int y = b-5; y < b + 15; y++)
+            for (int y = b - 5; y < b + 15; y++)
             {
                 tiles[x, y].Type = TileType.Floor;
 
-                if(x == l || x == (l+9) || y == b | y == (b + 9))
+                if (x == l || x == (l + 9) || y == b | y == (b + 9))
                 {
-                    if(x != (l+9) && y != (b + 4))
+                    if (x != (l + 9) && y != (b + 4))
                     {
                         PlaceInstalledObject("MetalWall", tiles[x, y]);
                     }
@@ -137,6 +147,8 @@ public class World
             //failed to place object, most likely there is already something there
             return;
         }
+
+        installedObjects.Add(obj);
 
         if (InstalledObjectChanged != null)
         {
@@ -205,5 +217,92 @@ public class World
     public void InvalidateTileGraph()
     {
         tileGraph = null;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///
+    ///                                                 SAVING AND LOADING
+    ///
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //serialization requires a private default constructor
+    private World()
+    {
+
+    }
+    public XmlSchema GetSchema()
+    {
+        return null;
+    }
+
+    public void ReadXml(XmlReader reader)
+    {
+        //read info here
+
+        Width = int.Parse(reader.GetAttribute("Width"));
+        Height = int.Parse(reader.GetAttribute("Height"));
+
+        SetupWorld(Width, Height);
+
+        while (reader.Read())
+        {
+            switch (reader.Name)
+            {
+                case "Tiles":
+                    ReadXML_Tiles(reader);
+                    break;
+            }
+        }
+    }
+
+    private void ReadXML_Tiles(XmlReader reader)
+    {
+        while (reader.Read())
+        {
+            if (reader.Name != "Tile")
+            {
+                return; //no more tiles
+            }
+            int x = int.Parse(reader.GetAttribute("X"));
+            int y = int.Parse(reader.GetAttribute("Y"));
+
+            tiles[x, y].ReadXml(reader);
+        }
+    }
+
+    public void WriteXml(XmlWriter writer)
+    {
+        //save info here
+        writer.WriteAttributeString("Width", Width.ToString());
+        writer.WriteAttributeString("Height", Height.ToString());
+
+        //Tiles
+        writer.WriteStartElement("Tiles");
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                //TODO: ignore tiles with empty space
+                writer.WriteStartElement("Tile");
+                tiles[x, y].WriteXml(writer);
+                writer.WriteEndElement();
+            }
+        }
+        writer.WriteEndElement();
+
+        //InstalledObjects
+        writer.WriteStartElement("InstalledObjects");
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                //TODO: ignore tiles with empty space
+                writer.WriteStartElement("InstalledObject");
+                tiles[x, y].WriteXml(writer);
+                writer.WriteEndElement();
+            }
+        }
+        writer.WriteEndElement();
+
     }
 }

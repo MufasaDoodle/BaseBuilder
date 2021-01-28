@@ -3,26 +3,26 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+using System.Xml.Serialization;
+using System.Xml;
+using System.Xml.Schema;
+
 public enum TileType { Empty, Floor }
 
-public class Tile
+public class Tile : IXmlSerializable
 {
-
-
-    private TileType type = TileType.Empty;
+    private TileType _type = TileType.Empty;
 
     public TileType Type
     {
-        get
-        {
-            return type;
-        }
-
+        get { return _type; }
         set
         {
-            type = value;
-            //fire type change event
-            if (tileChanged != null)
+            TileType oldType = _type;
+            _type = value;
+            // Call the callback and let things know we've changed.
+
+            if (tileChanged != null && oldType != _type)
             {
                 tileChanged(this);
             }
@@ -158,5 +158,23 @@ public class Tile
         }
 
         return ns;
+    }
+
+    // SERIALIZATION
+    public XmlSchema GetSchema()
+    {
+        return null;
+    }
+
+    public void WriteXml(XmlWriter writer)
+    {
+        writer.WriteAttributeString("X", X.ToString());
+        writer.WriteAttributeString("Y", Y.ToString());
+        writer.WriteAttributeString("Type", ((int)Type).ToString());
+    }
+
+    public void ReadXml(XmlReader reader)
+    {
+        Type = (TileType)int.Parse(reader.GetAttribute("Type"));
     }
 }

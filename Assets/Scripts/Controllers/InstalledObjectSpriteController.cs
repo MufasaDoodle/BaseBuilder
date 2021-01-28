@@ -24,6 +24,11 @@ public class InstalledObjectSpriteController : MonoBehaviour
         installedObjectGameObjectMap = new Dictionary<InstalledObject, GameObject>();        
 
         World.RegisterInstalledObject(OnInstalledObjectCreated);
+
+        foreach (var obj in World.installedObjects)
+        {
+            OnInstalledObjectCreated(obj);
+        }
     }
 
     private void LoadSprites()

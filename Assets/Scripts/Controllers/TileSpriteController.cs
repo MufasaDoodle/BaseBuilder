@@ -36,16 +36,15 @@ public class TileSpriteController : MonoBehaviour
                 tile_go.transform.position = new Vector3(tileData.X, tileData.Y, 0);
                 tile_go.transform.SetParent(this.transform, true);
 
-                tile_go.AddComponent<SpriteRenderer>();
-                tile_go.GetComponent<SpriteRenderer>().sortingLayerName = "Tiles";
+                SpriteRenderer sr = tile_go.AddComponent<SpriteRenderer>();
+                sr.sprite = emptySprite;
+                sr.sortingLayerName = "Tiles";
+
+                OnTileChanged(tileData);
             }
         }
 
         World.RegisterTileChanged(OnTileChanged);
-
-        //after all the tiles have been created, they are still missing a type, and therefore also a sprite
-        //this method gives them a type of empty
-        WorldController.World.InitializeWorldWithEmptySpace();
     }
 
     void OnTileChanged(Tile tileData)
