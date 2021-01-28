@@ -33,6 +33,11 @@ public class BuildModeController : MonoBehaviour
         buildModeObjectType = objectType;
     }
 
+    public void DoPathfindingTest()
+    {
+        WorldController.World.SetupPathfindingExample();
+    }
+
     public void DoBuild(Tile t)
     {
         if (isBuildModeObjects)

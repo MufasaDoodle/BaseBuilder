@@ -42,6 +42,24 @@ public class Tile
 
     public int Y { get; protected set; }
 
+    public float movementCost
+    {
+        get
+        {
+            if (Type == TileType.Empty)
+            {
+                return 0; //unwalkable
+            }
+
+            if (InstalledObject == null)
+            {
+                return 1;
+            }
+
+            return 1 * InstalledObject.MovementCost;
+        }
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Tile"></see> class
     /// </summary>
@@ -91,5 +109,50 @@ public class Tile
     public bool IsNeighbour(Tile tile, bool diagOkay = false)
     {
         return Mathf.Abs(tile.X - this.X) + Mathf.Abs(tile.Y - this.Y) == 1 || (diagOkay && Mathf.Abs(tile.X - this.X) == 1 && Mathf.Abs(tile.Y - this.Y) == 1);
+    }
+
+    public Tile[] GetNeighbours(bool diagOkay = false)
+    {
+        Tile[] ns;
+
+        if (diagOkay == false)
+        {
+            ns = new Tile[4];
+        }
+        else
+        {
+            ns = new Tile[8];
+        }
+
+        Tile n;
+
+        n = World.GetTileAt(X, Y + 1);
+        ns[0] = n;
+
+        n = World.GetTileAt(X + 1, Y);
+        ns[1] = n;
+
+        n = World.GetTileAt(X, Y - 1);
+        ns[2] = n;
+
+        n = World.GetTileAt(X - 1, Y);
+        ns[3] = n;
+
+        if (diagOkay)
+        {
+            n = World.GetTileAt(X + 1, Y + 1);
+            ns[4] = n;
+
+            n = World.GetTileAt(X + 1, Y - 1);
+            ns[5] = n;
+
+            n = World.GetTileAt(X - 1, Y - 1);
+            ns[6] = n;
+
+            n = World.GetTileAt(X - 1, Y + 1);
+            ns[7] = n;
+        }
+
+        return ns;
     }
 }

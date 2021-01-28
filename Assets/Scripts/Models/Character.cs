@@ -9,22 +9,24 @@ public class Character
     {
         get
         {
-            return Mathf.Lerp(CurrTile.X, destTile.X, movementPercentage);
+            return Mathf.Lerp(CurrTile.X, nextTile.X, movementPercentage);
         }
     }
     public float Y
     {
         get
         {
-            return Mathf.Lerp(CurrTile.Y, destTile.Y, movementPercentage);
+            return Mathf.Lerp(CurrTile.Y, nextTile.Y, movementPercentage);
         }
     }
 
     public Tile CurrTile { get; protected set; }
     Tile destTile;
+    Tile nextTile;
+    Path_AStar pathAStar;
     float movementPercentage; //goes from 0 to 1 as we move from current tile to destination tile
 
-    float speed = 2f; //tiles per second
+    float speed = 5f; //tiles per second
 
     Action<Character> characterChanged;
 
@@ -32,19 +34,20 @@ public class Character
 
     public Character(Tile tile)
     {
-        CurrTile = destTile = tile;
+        CurrTile = destTile = nextTile = tile;
     }
 
-    public void Update(float deltaTime)
+    void Update_DoJob(float deltaTime)
     {
-        if(myJob == null)
+        if (myJob == null)
         {
             //grab a new job from queue
             myJob = CurrTile.World.jobQueue.Dequeue();
 
-            if(myJob != null)
+            if (myJob != null)
             {
                 //we have a job now
+
                 destTile = myJob.Tile;
                 myJob.RegisterJobCancelCallback(OnJobEnded);
                 myJob.RegisterJobCompleteCallback(OnJobEnded);
@@ -52,18 +55,69 @@ public class Character
         }
 
         //are we there?
-        if(CurrTile == destTile)
+        //if(pathAStar != null && pathAStar.Length() == 1)
+        if (CurrTile == destTile)
         {
-            if(myJob != null)
+            if (myJob != null)
             {
                 myJob.DoWork(deltaTime);
             }
 
             return;
         }
+    }
+
+    public void AbandonJob()
+    {
+        nextTile = destTile = CurrTile;
+        pathAStar = null;
+        CurrTile.World.jobQueue.Enqueue(myJob);
+        myJob = null;
+    }
+
+    void Update_DoMovement(float deltaTime)
+    {
+        if (CurrTile == destTile)
+        {
+            pathAStar = null;
+            return;
+        }
+
+        if (nextTile == null || nextTile == CurrTile)
+        {
+            //get the next tile from the pathfinder
+            if (pathAStar == null || pathAStar.Length() == 0)
+            {
+                //gen a path to dest
+                pathAStar = new Path_AStar(CurrTile.World, CurrTile, destTile);
+                if (pathAStar.Length() == 0)
+                {
+                    Debug.LogError($"Path A star returned no path to destination");
+                    //TODO: job should be readded to queue if cancelled
+                    AbandonJob();
+                    pathAStar = null;
+                    return;
+                }
+            }
+
+            nextTile = pathAStar.Dequeue();
+
+            if (nextTile == CurrTile)
+            {
+                Debug.LogError($"Update_DoMovement - nexttile is currtile??");
+            }
+        }
+
+        /*if(pathAStar.Length() == 1)
+        {
+            return;
+        }
+        */
 
         //get distance from a to b
-        float distToTravel = Mathf.Sqrt(Mathf.Pow(CurrTile.X - destTile.X, 2) + Mathf.Pow(CurrTile.Y - destTile.Y, 2));
+        float distToTravel = Mathf.Sqrt(
+            Mathf.Pow(CurrTile.X - nextTile.X, 2) +
+            Mathf.Pow(CurrTile.Y - nextTile.Y, 2));
 
         //how much distance are we travelling this update cycle
         float distThisFrame = speed * deltaTime;
@@ -74,14 +128,25 @@ public class Character
         // add that to overall percentage travelled
         movementPercentage += percThisFrame;
 
-        if(movementPercentage >= 1)
+        if (movementPercentage >= 1)
         {
             //we have reached out destination
-            CurrTile = destTile;
+
+            //todo: get the next destinatnion from the pathfinding system
+            //if there are no more tiles then we have truly reached the destination
+
+            CurrTile = nextTile;
             movementPercentage = 0;
         }
+    }
 
-        if(characterChanged != null)
+    public void Update(float deltaTime)
+    {
+        Update_DoJob(deltaTime);
+
+        Update_DoMovement(deltaTime);
+
+        if (characterChanged != null)
         {
             characterChanged(this);
         }
@@ -89,7 +154,7 @@ public class Character
 
     public void SetDestination(Tile tile)
     {
-        if (CurrTile.IsNeighbour(tile,true) == false)
+        if (CurrTile.IsNeighbour(tile, true) == false)
         {
             Debug.Log("Character::SetDestination -- Out destination tile is not our neighbour");
         }
@@ -111,7 +176,7 @@ public class Character
     {
         //job completed or was cancelled
 
-        if(j != myJob)
+        if (j != myJob)
         {
             Debug.LogError($"Character being told aobut job that isn't his. You forgot to unregister something");
             return;

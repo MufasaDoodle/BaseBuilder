@@ -16,7 +16,7 @@ public class InstalledObject
     //fx a rough tile with a cost of 2 with a table on it with a cost of 3 that is on fire with cost of 3
     //would have a total movement cost of (2+3+3) = 8, so you would move through here at 1/8th speed
     //IF MOVEMENT COST = 0, TILE IS IMPASSIBLE. fx walls
-    float movementCost;
+    public float MovementCost { get; protected set; }
 
     //fx, sofa might be 3x2 (graphics may only occupy 3x1, but the extra space is for leg room)
     int width;
@@ -37,7 +37,7 @@ public class InstalledObject
     {
         InstalledObject obj = new InstalledObject();
         obj.ObjectType = objectType;
-        obj.movementCost = movementCost;
+        obj.MovementCost = movementCost;
         obj.width = width;
         obj.height = height;
         obj.LinksToNeighbour = linksToNeighbour;
@@ -58,7 +58,7 @@ public class InstalledObject
 
         InstalledObject obj = new InstalledObject();
         obj.ObjectType = proto.ObjectType;
-        obj.movementCost = proto.movementCost;
+        obj.MovementCost = proto.MovementCost;
         obj.width = proto.width;
         obj.height = proto.height;
         obj.LinksToNeighbour = proto.LinksToNeighbour;

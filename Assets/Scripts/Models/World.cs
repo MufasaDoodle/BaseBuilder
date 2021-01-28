@@ -8,6 +8,9 @@ public class World
     Tile[,] tiles;
     List<Character> characters;
 
+    //used for pathfinding
+    public Path_TileGraph tileGraph;
+
     Dictionary<string, InstalledObject> installedObjectPrototypes;
 
     public int Width { get; }
@@ -109,9 +112,9 @@ public class World
 
     public Tile GetTileAt(int x, int y)
     {
-        if (x > Width || x < 0 || y > Height || y < 0)
+        if (x >= Width || x < 0 || y >= Height || y < 0)
         {
-            Debug.LogError($"Tile ({x},{y}) is out of range");
+            //Debug.LogError($"Tile ({x},{y}) is out of range");
             return null;
         }
         return tiles[x, y];
@@ -138,6 +141,7 @@ public class World
         if (InstalledObjectChanged != null)
         {
             InstalledObjectChanged(obj);
+            InvalidateTileGraph();
         }
     }
 
@@ -194,5 +198,12 @@ public class World
             return;
         }
         TileChanged(t);
+
+        InvalidateTileGraph();
+    }
+
+    public void InvalidateTileGraph()
+    {
+        tileGraph = null;
     }
 }
