@@ -140,15 +140,19 @@ public class Tile
 
         if (diagOkay)
         {
+            //NE
             n = World.GetTileAt(X + 1, Y + 1);
             ns[4] = n;
 
+            //SE
             n = World.GetTileAt(X + 1, Y - 1);
             ns[5] = n;
 
+            //SW
             n = World.GetTileAt(X - 1, Y - 1);
             ns[6] = n;
 
+            //NW
             n = World.GetTileAt(X - 1, Y + 1);
             ns[7] = n;
         }
