@@ -24,8 +24,12 @@ public class CharacterSpriteController : MonoBehaviour
 
         World.RegisterCharacterCreated(OnCharacterCreated);
 
+        foreach(Character c in World.characters)
+        {
+            OnCharacterCreated(c);
+        }
+
         //FOR DEBUG
-        Character c = World.CreateCharacter(World.GetTileAt(World.Width / 2, World.Height / 2));
         //c.SetDestination(World.GetTileAt(World.Width / 2 + 5, World.Height / 2));
     }
 

@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Xml.Serialization;
+using System.Xml;
+using System.Xml.Schema;
 
-public class Structure
+public class Structure : IXmlSerializable
 {
     //represents BASE tile, in practice large objects may occupy more tiles
     public Tile Tile { get; protected set; }
@@ -28,7 +31,7 @@ public class Structure
 
     Func<Tile, bool> funcPositionValidation;
 
-    protected Structure()
+    private Structure()
     {
 
     }
@@ -84,28 +87,28 @@ public class Structure
 
             t = tile.World.GetTileAt(x, y + 1);
 
-            if (t != null && t.Structure != null && t.Structure.ObjectType.Equals(obj.ObjectType))
+            if (t != null && t.Structure != null && t.Structure.OnChanged != null && t.Structure.ObjectType.Equals(obj.ObjectType))
             {
                 t.Structure.OnChanged(t.Structure); //fires on change event, provoking the object to figure out its new graphic state
             }
 
             t = tile.World.GetTileAt(x + 1, y);
 
-            if (t != null && t.Structure != null && t.Structure.ObjectType.Equals(obj.ObjectType))
+            if (t != null && t.Structure != null && t.Structure.OnChanged != null && t.Structure.ObjectType.Equals(obj.ObjectType))
             {
                 t.Structure.OnChanged(t.Structure);
             }
 
             t = tile.World.GetTileAt(x, y - 1);
 
-            if (t != null && t.Structure != null && t.Structure.ObjectType.Equals(obj.ObjectType))
+            if (t != null && t.Structure != null && t.Structure.OnChanged != null && t.Structure.ObjectType.Equals(obj.ObjectType))
             {
                 t.Structure.OnChanged(t.Structure);
             }
 
             t = tile.World.GetTileAt(x - 1, y);
 
-            if (t != null && t.Structure != null && t.Structure.ObjectType.Equals(obj.ObjectType))
+            if (t != null && t.Structure != null && t.Structure.OnChanged != null && t.Structure.ObjectType.Equals(obj.ObjectType))
             {
                 t.Structure.OnChanged(t.Structure);
             }
@@ -155,5 +158,25 @@ public class Structure
     public void UnregisterOnChanged(Action<Structure> callbackFunc)
     {
         OnChanged -= callbackFunc;
+    }
+
+    //SERIALIZAING
+
+    public XmlSchema GetSchema()
+    {
+        return null;
+    }
+
+    public void ReadXml(XmlReader reader)
+    {
+        MovementCost = (float)float.Parse(reader.GetAttribute("movementCost"));
+    }
+
+    public void WriteXml(XmlWriter writer)
+    {
+        writer.WriteAttributeString("X", Tile.X.ToString());
+        writer.WriteAttributeString("Y", Tile.Y.ToString());
+        writer.WriteAttributeString("objectType", ObjectType);
+        writer.WriteAttributeString("movementCost", MovementCost.ToString());
     }
 }

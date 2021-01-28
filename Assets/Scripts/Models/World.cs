@@ -9,7 +9,7 @@ using System.Xml.Schema;
 public class World : IXmlSerializable
 {
     Tile[,] tiles;
-    List<Character> characters;
+    public List<Character> characters;
     public List<Structure> structures;
 
     //used for pathfinding
@@ -30,6 +30,8 @@ public class World : IXmlSerializable
     public World(int width = 100, int height = 100)
     {
         SetupWorld(width, height);
+
+        Character c = CreateCharacter(GetTileAt(Width / 2, Height / 2));
     }
 
     void SetupWorld(int width, int height)
@@ -130,14 +132,14 @@ public class World : IXmlSerializable
         return tiles[x, y];
     }
 
-    public void PlaceStructure(string objectType, Tile t)
+    public Structure PlaceStructure(string objectType, Tile t)
     {
         //TODO: function assumes 1x1 tile. change later
 
         if (!structurePrototypes.ContainsKey(objectType))
         {
             Debug.LogError($"StructurePrototypes does not contain a proto for key {objectType}");
-            return;
+            return null;
         }
 
         Structure obj = Structure.PlaceInstance(structurePrototypes[objectType], t);
@@ -145,7 +147,7 @@ public class World : IXmlSerializable
         if (obj == null)
         {
             //failed to place object, most likely there is already something there
-            return;
+            return null;
         }
 
         structures.Add(obj);
@@ -155,6 +157,8 @@ public class World : IXmlSerializable
             StructureChanged(obj);
             InvalidateTileGraph();
         }
+
+        return obj;
     }
 
     public Structure GetStructurePrototype(string objectType)
@@ -251,7 +255,30 @@ public class World : IXmlSerializable
                 case "Tiles":
                     ReadXML_Tiles(reader);
                     break;
+                case "Structures":
+                    ReadXML_Structures(reader);
+                    break;
+                case "Characters":
+                    ReadXML_Characters(reader);
+                    break;
             }
+        }
+    }
+
+    private void ReadXML_Characters(XmlReader reader)
+    {
+        while (reader.Read())
+        {
+            if (reader.Name != "Character")
+            {
+                return; //no more tiles
+            }
+            int x = int.Parse(reader.GetAttribute("X"));
+            int y = int.Parse(reader.GetAttribute("Y"));
+
+            Character c = CreateCharacter(tiles[x, y]);
+
+            c.ReadXml(reader);
         }
     }
 
@@ -270,6 +297,22 @@ public class World : IXmlSerializable
         }
     }
 
+    private void ReadXML_Structures(XmlReader reader)
+    {
+        while (reader.Read())
+        {
+            if (reader.Name != "Structure")
+            {
+                return; //no more structures
+            }
+            int x = int.Parse(reader.GetAttribute("X"));
+            int y = int.Parse(reader.GetAttribute("Y"));
+
+            Structure structure = PlaceStructure(reader.GetAttribute("objectType"), tiles[x, y]);
+            structure.ReadXml(reader);
+        }
+    }
+
     public void WriteXml(XmlWriter writer)
     {
         //save info here
@@ -282,6 +325,10 @@ public class World : IXmlSerializable
         {
             for (int y = 0; y < Height; y++)
             {
+                if(tiles[x,y].Type == TileType.Empty)
+                {
+                    continue;
+                }
                 //TODO: ignore tiles with empty space
                 writer.WriteStartElement("Tile");
                 tiles[x, y].WriteXml(writer);
@@ -292,17 +339,22 @@ public class World : IXmlSerializable
 
         //Structures
         writer.WriteStartElement("Structures");
-        for (int x = 0; x < Width; x++)
+        foreach (var structure in structures)
         {
-            for (int y = 0; y < Height; y++)
-            {
-                //TODO: ignore tiles with empty space
-                writer.WriteStartElement("Structure");
-                tiles[x, y].WriteXml(writer);
-                writer.WriteEndElement();
-            }
+            writer.WriteStartElement("Structure");
+            structure.WriteXml(writer);
+            writer.WriteEndElement();
         }
         writer.WriteEndElement();
 
+        //Characters
+        writer.WriteStartElement("Characters");
+        foreach (var character in characters)
+        {
+            writer.WriteStartElement("Character");
+            character.WriteXml(writer);
+            writer.WriteEndElement();
+        }
+        writer.WriteEndElement();
     }
 }
