@@ -1805,7 +1805,7 @@ GameObject:
   - component: {fileID: 1415544083}
   - component: {fileID: 1415544084}
   m_Layer: 0
-  m_Name: InstalledObjectSpriteController
+  m_Name: StructureSpriteController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1834,7 +1834,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1415544082}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b26e8ac92d44f647a5db5c1c9c35059, type: 3}
+  m_Script: {fileID: 11500000, guid: 141b63b38cf21614087c8546cf918f04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1451413802
@@ -2218,7 +2218,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 794022254}
-        m_MethodName: SetMode_BuildInstalledObject
+        m_MethodName: SetMode_BuildStructures
         m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

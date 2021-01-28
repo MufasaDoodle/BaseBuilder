@@ -4,17 +4,17 @@ using UnityEngine;
 
 public class JobSpriteController : MonoBehaviour
 {
-    //this will be bare-bones. it mostly relies on InstalledObjectSpriteController
+    //this will be bare-bones. it mostly relies on StructureSpriteController
     //this is because i don't know what the job system will actually look like :(
 
-    InstalledObjectSpriteController iosc;
+    StructureSpriteController iosc;
     Dictionary<Job, GameObject> jobGameObjectMap;
 
     // Start is called before the first frame update
     void Start()
     {
         jobGameObjectMap = new Dictionary<Job, GameObject>();
-        iosc = FindObjectOfType<InstalledObjectSpriteController>();
+        iosc = FindObjectOfType<StructureSpriteController>();
 
         //Todo: does not exist
         WorldController.World.jobQueue.RegisterJobCreationCallback(OnJobCreated);
@@ -39,7 +39,7 @@ public class JobSpriteController : MonoBehaviour
         job_go.transform.SetParent(this.transform, true);
 
         SpriteRenderer sr = job_go.AddComponent<SpriteRenderer>();
-        sr.sprite = iosc.GetSpriteForInstalledObject(j.JobObjectType);
+        sr.sprite = iosc.GetSpriteForStructure(j.JobObjectType);
         sr.color = new Color(0.5f, 1f, 0.5f, 0.25f);
         sr.sortingLayerName = "Jobs";
 

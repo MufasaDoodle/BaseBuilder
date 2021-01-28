@@ -10,17 +10,17 @@ public class World : IXmlSerializable
 {
     Tile[,] tiles;
     List<Character> characters;
-    public List<InstalledObject> installedObjects;
+    public List<Structure> structures;
 
     //used for pathfinding
     public Path_TileGraph tileGraph;
 
-    Dictionary<string, InstalledObject> installedObjectPrototypes;
+    Dictionary<string, Structure> structurePrototypes;
 
     public int Width { get; protected set; }
     public int Height { get; protected set; }
 
-    Action<InstalledObject> InstalledObjectChanged;
+    Action<Structure> StructureChanged;
     Action<Tile> TileChanged;
     Action<Character> characterCreated;
 
@@ -52,10 +52,10 @@ public class World : IXmlSerializable
 
         Debug.Log($"World created with {width * height} tiles");
 
-        CreateInstalledObjectPrototypes();
+        CreateStructurePrototypes();
 
         characters = new List<Character>();
-        installedObjects = new List<InstalledObject>();
+        structures = new List<Structure>();
     }
 
     public void Update(float deltaTime)
@@ -79,11 +79,11 @@ public class World : IXmlSerializable
         return c;
     }
 
-    void CreateInstalledObjectPrototypes()
+    void CreateStructurePrototypes()
     {
-        installedObjectPrototypes = new Dictionary<string, InstalledObject>();
+        structurePrototypes = new Dictionary<string, Structure>();
 
-        installedObjectPrototypes.Add("MetalWall", InstalledObject.CreatePrototype("MetalWall", 0f, 1, 1, true));
+        structurePrototypes.Add("MetalWall", Structure.CreatePrototype("MetalWall", 0f, 1, 1, true));
     }
 
     public void InitializeWorldWithEmptySpace()
@@ -113,7 +113,7 @@ public class World : IXmlSerializable
                 {
                     if (x != (l + 9) && y != (b + 4))
                     {
-                        PlaceInstalledObject("MetalWall", tiles[x, y]);
+                        PlaceStructure("MetalWall", tiles[x, y]);
                     }
                 }
             }
@@ -130,17 +130,17 @@ public class World : IXmlSerializable
         return tiles[x, y];
     }
 
-    public void PlaceInstalledObject(string objectType, Tile t)
+    public void PlaceStructure(string objectType, Tile t)
     {
         //TODO: function assumes 1x1 tile. change later
 
-        if (!installedObjectPrototypes.ContainsKey(objectType))
+        if (!structurePrototypes.ContainsKey(objectType))
         {
-            Debug.LogError($"InstalledObjectPrototypes does not contain a proto for key {objectType}");
+            Debug.LogError($"StructurePrototypes does not contain a proto for key {objectType}");
             return;
         }
 
-        InstalledObject obj = InstalledObject.PlaceInstance(installedObjectPrototypes[objectType], t);
+        Structure obj = Structure.PlaceInstance(structurePrototypes[objectType], t);
 
         if (obj == null)
         {
@@ -148,39 +148,39 @@ public class World : IXmlSerializable
             return;
         }
 
-        installedObjects.Add(obj);
+        structures.Add(obj);
 
-        if (InstalledObjectChanged != null)
+        if (StructureChanged != null)
         {
-            InstalledObjectChanged(obj);
+            StructureChanged(obj);
             InvalidateTileGraph();
         }
     }
 
-    public InstalledObject GetInstalledObjectPrototype(string objectType)
+    public Structure GetStructurePrototype(string objectType)
     {
-        if (installedObjectPrototypes.ContainsKey(objectType) == false)
+        if (structurePrototypes.ContainsKey(objectType) == false)
         {
             Debug.LogError($"No furniture with type {objectType}");
             return null;
         }
 
-        return installedObjectPrototypes[objectType];
+        return structurePrototypes[objectType];
     }
 
-    public bool IsInstalledObjectPlacementValid(string objectType, Tile t)
+    public bool IsStructurePlacementValid(string objectType, Tile t)
     {
-        return installedObjectPrototypes[objectType].IsValidPosition(t);
+        return structurePrototypes[objectType].IsValidPosition(t);
     }
 
-    public void RegisterInstalledObject(Action<InstalledObject> callbackFunc)
+    public void RegisterStructureChanged(Action<Structure> callbackFunc)
     {
-        InstalledObjectChanged += callbackFunc;
+        StructureChanged += callbackFunc;
     }
 
-    public void UnregisterInstalledObject(Action<InstalledObject> callbackFunc)
+    public void UnregisterStructureChanged(Action<Structure> callbackFunc)
     {
-        InstalledObjectChanged -= callbackFunc;
+        StructureChanged -= callbackFunc;
     }
 
     public void RegisterTileChanged(Action<Tile> callbackFunc)
@@ -290,14 +290,14 @@ public class World : IXmlSerializable
         }
         writer.WriteEndElement();
 
-        //InstalledObjects
-        writer.WriteStartElement("InstalledObjects");
+        //Structures
+        writer.WriteStartElement("Structures");
         for (int x = 0; x < Width; x++)
         {
             for (int y = 0; y < Height; y++)
             {
                 //TODO: ignore tiles with empty space
-                writer.WriteStartElement("InstalledObject");
+                writer.WriteStartElement("Structure");
                 tiles[x, y].WriteXml(writer);
                 writer.WriteEndElement();
             }

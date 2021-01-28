@@ -44,7 +44,7 @@ TagManager:
   - name: Tiles
     uniqueID: 2098528325
     locked: 0
-  - name: InstalledObjects
+  - name: Structures
     uniqueID: 3260053849
     locked: 0
   - name: Jobs

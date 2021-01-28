@@ -9,7 +9,7 @@ public class SoundController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        WorldController.World.RegisterInstalledObject(OnInstalledObjectCreated);
+        WorldController.World.RegisterStructureChanged(OnStructureCreated);
         WorldController.World.RegisterTileChanged(OnTileChanged);
     }
 
@@ -40,7 +40,7 @@ public class SoundController : MonoBehaviour
         soundCooldown = 0.1f;
     }
 
-    void OnInstalledObjectCreated(InstalledObject installedObject)
+    void OnStructureCreated(Structure structure)
     {
         //TODO
 
@@ -49,11 +49,11 @@ public class SoundController : MonoBehaviour
             return;
         }
 
-        AudioClip ac = Resources.Load<AudioClip>($"Sounds/{installedObject.ObjectType}_OnCreated");
+        AudioClip ac = Resources.Load<AudioClip>($"Sounds/{structure.ObjectType}_OnCreated");
 
         if (ac == null)
         {
-            //no specific sound exists for this installedObject, playing default sound
+            //no specific sound exists for this structure, playing default sound
             ac = Resources.Load<AudioClip>($"Sounds/Object_Default");
         }
 

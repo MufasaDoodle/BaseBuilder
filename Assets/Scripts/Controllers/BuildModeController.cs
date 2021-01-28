@@ -27,7 +27,7 @@ public class BuildModeController : MonoBehaviour
         buildModeTile = TileType.Empty;
     }
 
-    public void SetMode_BuildInstalledObject(string objectType)
+    public void SetMode_BuildStructures(string objectType)
     {
         isBuildModeObjects = true;
         buildModeObjectType = objectType;
@@ -52,19 +52,19 @@ public class BuildModeController : MonoBehaviour
 
             string objectType = buildModeObjectType;
 
-            if (WorldController.World.IsInstalledObjectPlacementValid(objectType, t) && t.pendingInstalledObjectJob == null)
+            if (WorldController.World.IsStructurePlacementValid(objectType, t) && t.pendingStructureJob == null)
             {
                 //this tile is valid for this object
                 //create job for it to be built
                 Job j = new Job(t, objectType ,(theJob) =>
                 {
-                    WorldController.World.PlaceInstalledObject(objectType, theJob.Tile);
-                    t.pendingInstalledObjectJob = null;
+                    WorldController.World.PlaceStructure(objectType, theJob.Tile);
+                    t.pendingStructureJob = null;
                 });
 
                 //TODO this is not good, don't manually set flags that prevent conflicts, too easy to mess up
-                t.pendingInstalledObjectJob = j;
-                j.RegisterJobCancelCallback((theJob) => { theJob.Tile.pendingInstalledObjectJob = null; });
+                t.pendingStructureJob = j;
+                j.RegisterJobCancelCallback((theJob) => { theJob.Tile.pendingStructureJob = null; });
 
                 //add job to queue
                 WorldController.World.jobQueue.Enqueue(j);

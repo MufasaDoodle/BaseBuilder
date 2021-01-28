@@ -30,9 +30,9 @@ public class Tile : IXmlSerializable
     }
 
     public LooseObject LooseObject { get; protected set; }
-    public InstalledObject InstalledObject { get; protected set; }
+    public Structure Structure { get; protected set; }
 
-    public Job pendingInstalledObjectJob;
+    public Job pendingStructureJob;
 
     Action<Tile> tileChanged;
 
@@ -51,12 +51,12 @@ public class Tile : IXmlSerializable
                 return 0; //unwalkable
             }
 
-            if (InstalledObject == null)
+            if (Structure == null)
             {
                 return 1;
             }
 
-            return 1 * InstalledObject.MovementCost;
+            return 1 * Structure.MovementCost;
         }
     }
 
@@ -87,22 +87,22 @@ public class Tile : IXmlSerializable
         tileChanged -= callback;
     }
 
-    public bool PlaceObject(InstalledObject objInstance)
+    public bool PlaceObject(Structure objInstance)
     {
         if (objInstance == null)
         {
             //uninstalling object
-            InstalledObject = null;
+            Structure = null;
             return true;
         }
 
-        if (InstalledObject != null)
+        if (Structure != null)
         {
             Debug.LogError($"Trying to assign an installed object to tile that already has one");
             return false;
         }
 
-        InstalledObject = objInstance;
+        Structure = objInstance;
         return true;
     }
 

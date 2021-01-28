@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class InstalledObject
+public class Structure
 {
     //represents BASE tile, in practice large objects may occupy more tiles
     public Tile Tile { get; protected set; }
@@ -24,18 +24,18 @@ public class InstalledObject
 
     public bool LinksToNeighbour { get; protected set; }
 
-    Action<InstalledObject> OnChanged;
+    Action<Structure> OnChanged;
 
     Func<Tile, bool> funcPositionValidation;
 
-    protected InstalledObject()
+    protected Structure()
     {
 
     }
 
-    static public InstalledObject CreatePrototype(string objectType, float movementCost = 1f, int width = 1, int height = 1, bool linksToNeighbour = false)
+    static public Structure CreatePrototype(string objectType, float movementCost = 1f, int width = 1, int height = 1, bool linksToNeighbour = false)
     {
-        InstalledObject obj = new InstalledObject();
+        Structure obj = new Structure();
         obj.ObjectType = objectType;
         obj.MovementCost = movementCost;
         obj.width = width;
@@ -47,7 +47,7 @@ public class InstalledObject
         return obj;
     }
 
-    static public InstalledObject PlaceInstance(InstalledObject proto, Tile tile)
+    static public Structure PlaceInstance(Structure proto, Tile tile)
     {
         //check if destination placement is valid
         if(proto.funcPositionValidation(tile) == false)
@@ -56,7 +56,7 @@ public class InstalledObject
             return null;
         }
 
-        InstalledObject obj = new InstalledObject();
+        Structure obj = new Structure();
         obj.ObjectType = proto.ObjectType;
         obj.MovementCost = proto.MovementCost;
         obj.width = proto.width;
@@ -84,30 +84,30 @@ public class InstalledObject
 
             t = tile.World.GetTileAt(x, y + 1);
 
-            if (t != null && t.InstalledObject != null && t.InstalledObject.ObjectType.Equals(obj.ObjectType))
+            if (t != null && t.Structure != null && t.Structure.ObjectType.Equals(obj.ObjectType))
             {
-                t.InstalledObject.OnChanged(t.InstalledObject); //fires on change event, provoking the object to figure out its new graphic state
+                t.Structure.OnChanged(t.Structure); //fires on change event, provoking the object to figure out its new graphic state
             }
 
             t = tile.World.GetTileAt(x + 1, y);
 
-            if (t != null && t.InstalledObject != null && t.InstalledObject.ObjectType.Equals(obj.ObjectType))
+            if (t != null && t.Structure != null && t.Structure.ObjectType.Equals(obj.ObjectType))
             {
-                t.InstalledObject.OnChanged(t.InstalledObject);
+                t.Structure.OnChanged(t.Structure);
             }
 
             t = tile.World.GetTileAt(x, y - 1);
 
-            if (t != null && t.InstalledObject != null && t.InstalledObject.ObjectType.Equals(obj.ObjectType))
+            if (t != null && t.Structure != null && t.Structure.ObjectType.Equals(obj.ObjectType))
             {
-                t.InstalledObject.OnChanged(t.InstalledObject);
+                t.Structure.OnChanged(t.Structure);
             }
 
             t = tile.World.GetTileAt(x - 1, y);
 
-            if (t != null && t.InstalledObject != null && t.InstalledObject.ObjectType.Equals(obj.ObjectType))
+            if (t != null && t.Structure != null && t.Structure.ObjectType.Equals(obj.ObjectType))
             {
-                t.InstalledObject.OnChanged(t.InstalledObject);
+                t.Structure.OnChanged(t.Structure);
             }
         }
 
@@ -128,7 +128,7 @@ public class InstalledObject
         }
 
         //check if tile does not already contain installed object
-        if(t.InstalledObject != null)
+        if(t.Structure != null)
         {
             return false;
         }
@@ -147,12 +147,12 @@ public class InstalledObject
         return true;
     }
 
-    public void RegisterOnChanged(Action<InstalledObject> callbackFunc)
+    public void RegisterOnChanged(Action<Structure> callbackFunc)
     {
         OnChanged += callbackFunc;
     }
 
-    public void UnregisterOnChanged(Action<InstalledObject> callbackFunc)
+    public void UnregisterOnChanged(Action<Structure> callbackFunc)
     {
         OnChanged -= callbackFunc;
     }
