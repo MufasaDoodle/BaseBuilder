@@ -6,7 +6,7 @@
 [Ll]ogs/
 
 # Uncomment this line if you wish to ignore the asset store tools plugin
-# [Aa]ssets/AssetStoreTools*
+ [Aa]ssets/AssetStoreTools*
 
 # Visual Studio cache directory
 .vs/
@@ -32,6 +32,10 @@ ExportedObj/
 *.opendb
 *.VC.db
 
+Assets/Resources/*
+Assets/Plugins/*
+Assets/Fonts/*
+
 # Unity3D generated meta files
 *.pidb.meta
 *.pdb.meta
@@ -46,3 +50,15 @@ sysinfo.txt
 
 # Crashlytics generated file
 crashlytics-build.properties
+
+###
+# OS generated
+###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
