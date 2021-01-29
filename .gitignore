@@ -32,7 +32,6 @@ ExportedObj/
 *.opendb
 *.VC.db
 
-Assets/Resources/*
 Assets/Plugins/*
 Assets/Fonts/*
 Assets/Unused Resources/*
