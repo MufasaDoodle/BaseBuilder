@@ -66,6 +66,10 @@ public class World : IXmlSerializable
         {
             c.Update(deltaTime);
         }
+        foreach (var s in structures)
+        {
+            s.Update(deltaTime);
+        }
     }
 
     public Character CreateCharacter(Tile t)
@@ -83,9 +87,15 @@ public class World : IXmlSerializable
 
     void CreateStructurePrototypes()
     {
+        //TODO: replace this with a function that reads data from a file instead
+
         structurePrototypes = new Dictionary<string, Structure>();
 
-        structurePrototypes.Add("MetalWall", Structure.CreatePrototype("MetalWall", 0f, 1, 1, true));
+        structurePrototypes.Add("MetalWall", new Structure("MetalWall", 0f, 1, 1, true));
+        structurePrototypes.Add("Door", new Structure("Door", 1f, 1, 1, false));
+
+        structurePrototypes["Door"].structureParameters["Openness"] = 0;
+        structurePrototypes["Door"].updateActions += StructureActions.Door_UpdateAction;
     }
 
     public void InitializeWorldWithEmptySpace()
@@ -177,6 +187,12 @@ public class World : IXmlSerializable
         return structurePrototypes[objectType].IsValidPosition(t);
     }
 
+    public void InvalidateTileGraph()
+    {
+        tileGraph = null;
+    }
+
+    #region callbacks
     public void RegisterStructureChanged(Action<Structure> callbackFunc)
     {
         StructureChanged += callbackFunc;
@@ -217,12 +233,9 @@ public class World : IXmlSerializable
 
         InvalidateTileGraph();
     }
+    #endregion
 
-    public void InvalidateTileGraph()
-    {
-        tileGraph = null;
-    }
-
+    #region SAVING&LOADING
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///
     ///                                                 SAVING AND LOADING
@@ -267,49 +280,48 @@ public class World : IXmlSerializable
 
     private void ReadXML_Characters(XmlReader reader)
     {
-        while (reader.Read())
+        if (reader.ReadToDescendant("Character"))
         {
-            if (reader.Name != "Character")
+            do
             {
-                return; //no more tiles
-            }
-            int x = int.Parse(reader.GetAttribute("X"));
-            int y = int.Parse(reader.GetAttribute("Y"));
+                int x = int.Parse(reader.GetAttribute("X"));
+                int y = int.Parse(reader.GetAttribute("Y"));
 
-            Character c = CreateCharacter(tiles[x, y]);
+                Character c = CreateCharacter(tiles[x, y]);
 
-            c.ReadXml(reader);
+                c.ReadXml(reader);
+            } 
+            while (reader.ReadToNextSibling("Character"));
         }
     }
 
     private void ReadXML_Tiles(XmlReader reader)
     {
-        while (reader.Read())
+        if (reader.ReadToDescendant("Tile"))
         {
-            if (reader.Name != "Tile")
+            do
             {
-                return; //no more tiles
+                int x = int.Parse(reader.GetAttribute("X"));
+                int y = int.Parse(reader.GetAttribute("Y"));
+                tiles[x, y].ReadXml(reader);
             }
-            int x = int.Parse(reader.GetAttribute("X"));
-            int y = int.Parse(reader.GetAttribute("Y"));
-
-            tiles[x, y].ReadXml(reader);
+            while (reader.ReadToNextSibling("Tile"));
         }
     }
 
     private void ReadXML_Structures(XmlReader reader)
     {
-        while (reader.Read())
+        if (reader.ReadToDescendant("Structure"))
         {
-            if (reader.Name != "Structure")
+            do
             {
-                return; //no more structures
-            }
-            int x = int.Parse(reader.GetAttribute("X"));
-            int y = int.Parse(reader.GetAttribute("Y"));
+                int x = int.Parse(reader.GetAttribute("X"));
+                int y = int.Parse(reader.GetAttribute("Y"));
 
-            Structure structure = PlaceStructure(reader.GetAttribute("objectType"), tiles[x, y]);
-            structure.ReadXml(reader);
+                Structure structure = PlaceStructure(reader.GetAttribute("objectType"), tiles[x, y]);
+                structure.ReadXml(reader);
+            } 
+            while (reader.ReadToNextSibling("Structure"));
         }
     }
 
@@ -325,7 +337,7 @@ public class World : IXmlSerializable
         {
             for (int y = 0; y < Height; y++)
             {
-                if(tiles[x,y].Type == TileType.Empty)
+                if (tiles[x, y].Type == TileType.Empty)
                 {
                     continue;
                 }
@@ -357,4 +369,5 @@ public class World : IXmlSerializable
         }
         writer.WriteEndElement();
     }
+    #endregion SAVING&LOADING
 }

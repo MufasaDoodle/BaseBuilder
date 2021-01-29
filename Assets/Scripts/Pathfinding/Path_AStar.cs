@@ -103,6 +103,10 @@ public class Path_AStar
                 {
                     OpenSet.Enqueue(neighbor, f_score[neighbor]);
                 }
+                else
+                {
+                    OpenSet.UpdatePriority(neighbor,f_score[neighbor]);
+                }
 
             } // foreach neighbour
         } // while

@@ -35,6 +35,7 @@ ExportedObj/
 Assets/Resources/*
 Assets/Plugins/*
 Assets/Fonts/*
+Assets/Unused Resources/*
 
 # Unity3D generated meta files
 *.pidb.meta

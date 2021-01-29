@@ -35,7 +35,7 @@ public class StructureSpriteController : MonoBehaviour
     {
         structureSprites = new Dictionary<string, Sprite>();
         //right now, only wood walls are loaded
-        Sprite[] sprites = Resources.LoadAll<Sprite>("Sprites/Structures/Walls/Metal/MetalSheet");
+        Sprite[] sprites = Resources.LoadAll<Sprite>("Sprites/Structures/");
 
         foreach (var sprite in sprites)
         {

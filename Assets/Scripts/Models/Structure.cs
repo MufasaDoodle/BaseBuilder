@@ -8,6 +8,17 @@ using System.Xml.Schema;
 
 public class Structure : IXmlSerializable
 {
+    public Dictionary<string, float> structureParameters;
+    public Action<Structure, float> updateActions;
+
+    public void Update(float deltaTime)
+    {
+        if(updateActions != null)
+        {
+            updateActions(this, deltaTime);
+        }
+    }
+
     //represents BASE tile, in practice large objects may occupy more tiles
     public Tile Tile { get; protected set; }
 
@@ -33,21 +44,40 @@ public class Structure : IXmlSerializable
 
     private Structure()
     {
-
+        structureParameters = new Dictionary<string, float>();
     }
 
-    static public Structure CreatePrototype(string objectType, float movementCost = 1f, int width = 1, int height = 1, bool linksToNeighbour = false)
+    protected Structure(Structure other)
     {
-        Structure obj = new Structure();
-        obj.ObjectType = objectType;
-        obj.MovementCost = movementCost;
-        obj.width = width;
-        obj.height = height;
-        obj.LinksToNeighbour = linksToNeighbour;
+        this.ObjectType = other.ObjectType;
+        this.MovementCost = other.MovementCost;
+        this.width = other.width;
+        this.height = other.height;
+        this.LinksToNeighbour = other.LinksToNeighbour;
 
-        obj.funcPositionValidation = obj.__IsValidPosition;
+        this.structureParameters = new Dictionary<string, float>(other.structureParameters);
+        if (other.updateActions != null)
+        {
+            updateActions = (Action<Structure, float>)other.updateActions.Clone();
+        }
+    }
 
-        return obj;
+    virtual public Structure Clone()
+    {
+        return new Structure(this);
+    }
+
+    public Structure (string objectType, float movementCost = 1f, int width = 1, int height = 1, bool linksToNeighbour = false)
+    {
+        this.ObjectType = objectType;
+        this.MovementCost = movementCost;
+        this.width = width;
+        this.height = height;
+        this.LinksToNeighbour = linksToNeighbour;
+
+        structureParameters = new Dictionary<string, float>();
+
+        this.funcPositionValidation = this.__IsValidPosition;
     }
 
     static public Structure PlaceInstance(Structure proto, Tile tile)
@@ -59,12 +89,7 @@ public class Structure : IXmlSerializable
             return null;
         }
 
-        Structure obj = new Structure();
-        obj.ObjectType = proto.ObjectType;
-        obj.MovementCost = proto.MovementCost;
-        obj.width = proto.width;
-        obj.height = proto.height;
-        obj.LinksToNeighbour = proto.LinksToNeighbour;
+        Structure obj = proto.Clone();
 
         obj.Tile = tile;
 
@@ -169,7 +194,18 @@ public class Structure : IXmlSerializable
 
     public void ReadXml(XmlReader reader)
     {
-        MovementCost = (float)float.Parse(reader.GetAttribute("movementCost"));
+        //MovementCost = (float)float.Parse(reader.GetAttribute("movementCost"));
+
+        if (reader.ReadToDescendant("Param"))
+        {
+            do
+            {
+                string k = reader.GetAttribute("name");
+                float v = float.Parse(reader.GetAttribute("value"));
+                structureParameters[k] = v;
+            } 
+            while (reader.ReadToNextSibling("Param"));
+        }
     }
 
     public void WriteXml(XmlWriter writer)
@@ -177,6 +213,14 @@ public class Structure : IXmlSerializable
         writer.WriteAttributeString("X", Tile.X.ToString());
         writer.WriteAttributeString("Y", Tile.Y.ToString());
         writer.WriteAttributeString("objectType", ObjectType);
-        writer.WriteAttributeString("movementCost", MovementCost.ToString());
+        //writer.WriteAttributeString("movementCost", MovementCost.ToString());
+
+        foreach (var k in structureParameters.Keys)
+        {
+            writer.WriteStartElement("Param");
+            writer.WriteAttributeString("name", k);
+            writer.WriteAttributeString("value", structureParameters[k].ToString());
+            writer.WriteEndElement();
+        }
     }
 }
