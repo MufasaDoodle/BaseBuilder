@@ -11,6 +11,8 @@ public class Structure : IXmlSerializable
     public Dictionary<string, float> structureParameters;
     public Action<Structure, float> updateActions;
 
+    public Func<Structure, Enterability> isEnterable;
+
     public void Update(float deltaTime)
     {
         if(updateActions != null)
@@ -38,7 +40,7 @@ public class Structure : IXmlSerializable
 
     public bool LinksToNeighbour { get; protected set; }
 
-    Action<Structure> OnChanged;
+    public Action<Structure> OnChanged;
 
     Func<Tile, bool> funcPositionValidation;
 
@@ -60,6 +62,8 @@ public class Structure : IXmlSerializable
         {
             updateActions = (Action<Structure, float>)other.updateActions.Clone();
         }
+
+        this.isEnterable = other.isEnterable;
     }
 
     virtual public Structure Clone()

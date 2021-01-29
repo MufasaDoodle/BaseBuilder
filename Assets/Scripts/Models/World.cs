@@ -94,8 +94,12 @@ public class World : IXmlSerializable
         structurePrototypes.Add("MetalWall", new Structure("MetalWall", 0f, 1, 1, true));
         structurePrototypes.Add("Door", new Structure("Door", 1f, 1, 1, false));
 
-        structurePrototypes["Door"].structureParameters["Openness"] = 0;
+        structurePrototypes["Door"].structureParameters["openness"] = 0;
+        structurePrototypes["Door"].structureParameters["is_opening"] = 0;
         structurePrototypes["Door"].updateActions += StructureActions.Door_UpdateAction;
+
+
+        structurePrototypes["Door"].isEnterable = StructureActions.Door_IsEnterable;
     }
 
     public void InitializeWorldWithEmptySpace()

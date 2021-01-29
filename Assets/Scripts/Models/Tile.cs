@@ -8,6 +8,7 @@ using System.Xml;
 using System.Xml.Schema;
 
 public enum TileType { Empty, Floor }
+public enum Enterability { Yes, Never, Soon}
 
 public class Tile : IXmlSerializable
 {
@@ -42,6 +43,8 @@ public class Tile : IXmlSerializable
 
     public int Y { get; protected set; }
 
+    float baseTileMovementCost = 1; //TODO hardcoded, fix
+
     public float movementCost
     {
         get
@@ -53,10 +56,10 @@ public class Tile : IXmlSerializable
 
             if (Structure == null)
             {
-                return 1;
+                return baseTileMovementCost;
             }
 
-            return 1 * Structure.MovementCost;
+            return baseTileMovementCost * Structure.MovementCost;
         }
     }
 
@@ -158,6 +161,21 @@ public class Tile : IXmlSerializable
         }
 
         return ns;
+    }
+
+    public Enterability IsEnterable()
+    {
+        if(movementCost == 0)
+        {
+            return Enterability.Never;
+        }
+
+        if(Structure != null && Structure.isEnterable != null)
+        {
+            return Structure.isEnterable(Structure);
+        }
+
+        return Enterability.Yes;
     }
 
     // SERIALIZATION

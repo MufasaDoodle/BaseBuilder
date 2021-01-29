@@ -59,14 +59,9 @@ public class Character : IXmlSerializable
 
         //are we there?
         //if(pathAStar != null && pathAStar.Length() == 1)
-        if (CurrTile == destTile)
+        if (myJob != null && CurrTile == destTile)
         {
-            if (myJob != null)
-            {
-                myJob.DoWork(deltaTime);
-            }
-
-            return;
+            myJob.DoWork(deltaTime);
         }
     }
 
@@ -96,7 +91,6 @@ public class Character : IXmlSerializable
                 if (pathAStar.Length() == 0)
                 {
                     Debug.LogError($"Path A star returned no path to destination");
-                    //TODO: job should be readded to queue if cancelled
                     AbandonJob();
                     pathAStar = null;
                     return;
@@ -118,11 +112,15 @@ public class Character : IXmlSerializable
             Mathf.Pow(CurrTile.X - nextTile.X, 2) +
             Mathf.Pow(CurrTile.Y - nextTile.Y, 2));
 
-        if(nextTile.movementCost == 0)
+        if (nextTile.IsEnterable() == Enterability.Never)
         {
             Debug.LogError($"FIXME: a character was trying to enter an unwalkable tile");
             nextTile = null;
             pathAStar = null;
+            return;
+        }
+        else if (nextTile.IsEnterable() == Enterability.Soon)
+        {
             return;
         }
 

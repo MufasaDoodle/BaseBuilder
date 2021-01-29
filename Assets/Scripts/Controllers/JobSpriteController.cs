@@ -43,6 +43,18 @@ public class JobSpriteController : MonoBehaviour
         sr.color = new Color(0.5f, 1f, 0.5f, 0.25f);
         sr.sortingLayerName = "Jobs";
 
+        //TODO: hardcoded, fix later
+        if (j.JobObjectType == "Door")
+        {
+            Tile northTile = j.Tile.World.GetTileAt(j.Tile.X, j.Tile.Y + 1);
+            Tile southTile = j.Tile.World.GetTileAt(j.Tile.X, j.Tile.Y - 1);
+
+            if (northTile != null && southTile != null && northTile.Structure != null && southTile.Structure != null && northTile.Structure.ObjectType.Contains("Wall") && southTile.Structure.ObjectType.Contains("Wall"))
+            {
+                job_go.transform.rotation = Quaternion.Euler(0, 0, 90);
+            }
+        }
+
         j.RegisterJobCompleteCallback(OnJobEnded);
         j.RegisterJobCancelCallback(OnJobEnded);
     }
