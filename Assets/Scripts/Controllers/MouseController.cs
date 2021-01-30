@@ -25,6 +25,16 @@ public class MouseController : MonoBehaviour
         dragPreviews = new List<GameObject>();
     }
 
+    public Vector3 GetMousePosition()
+    {
+        return currentMousePosition;
+    }
+
+    public Tile GetMouseOverTile()
+    {
+        return WorldController.World.GetTileAt(Mathf.RoundToInt(currentMousePosition.x), Mathf.RoundToInt(currentMousePosition.y));
+    }
+
     // Update is called once per frame
     void Update()
     {

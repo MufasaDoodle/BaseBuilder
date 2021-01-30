@@ -11,6 +11,7 @@ public class World : IXmlSerializable
     Tile[,] tiles;
     public List<Character> characters;
     public List<Structure> structures;
+    public List<Room> rooms;
 
     //used for pathfinding
     public Path_TileGraph tileGraph;
@@ -34,6 +35,29 @@ public class World : IXmlSerializable
         Character c = CreateCharacter(GetTileAt(Width / 2, Height / 2));
     }
 
+    public Room GetOutsideRoom()
+    {
+        return rooms[0]; //0 is default room
+    }
+
+    public void AddRoom(Room r)
+    {
+        rooms.Add(r);
+    }
+
+    public void DeleteRoom(Room r)
+    {
+        if(r == GetOutsideRoom())
+        {
+            Debug.LogError($"Tried to delete outside room");
+            return;
+        }
+
+        rooms.Remove(r);
+
+        r.UnassignAllTiles();
+    }
+
     void SetupWorld(int width, int height)
     {
         jobQueue = new JobQueue();
@@ -43,12 +67,16 @@ public class World : IXmlSerializable
 
         tiles = new Tile[width + 1, height + 1];
 
+        rooms = new List<Room>();
+        rooms.Add(new Room()); //Creating the outside
+
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
                 tiles[x, y] = new Tile(this, x, y);
                 tiles[x, y].RegisterTileTypeChangedCallback(OnTileChanged);
+                tiles[x, y].room = GetOutsideRoom();
             }
         }
 
@@ -91,14 +119,13 @@ public class World : IXmlSerializable
 
         structurePrototypes = new Dictionary<string, Structure>();
 
-        structurePrototypes.Add("MetalWall", new Structure("MetalWall", 0f, 1, 1, true));
-        structurePrototypes.Add("Door", new Structure("Door", 1f, 1, 1, false));
+        structurePrototypes.Add("MetalWall", new Structure("MetalWall", 0f, 1, 1, true, true));
+        structurePrototypes.Add("Door", new Structure("Door", 1f, 1, 1, false, true));
 
+        //params
         structurePrototypes["Door"].structureParameters["openness"] = 0;
         structurePrototypes["Door"].structureParameters["is_opening"] = 0;
         structurePrototypes["Door"].updateActions += StructureActions.Door_UpdateAction;
-
-
         structurePrototypes["Door"].isEnterable = StructureActions.Door_IsEnterable;
     }
 
@@ -166,10 +193,19 @@ public class World : IXmlSerializable
 
         structures.Add(obj);
 
+        if (obj.RoomEnclosure)
+        {
+            Room.DoRoomFloodFill(obj);
+        }
+
         if (StructureChanged != null)
         {
             StructureChanged(obj);
-            InvalidateTileGraph();
+
+            if (obj.MovementCost != 1)
+            {
+                InvalidateTileGraph();
+            }
         }
 
         return obj;
@@ -294,7 +330,7 @@ public class World : IXmlSerializable
                 Character c = CreateCharacter(tiles[x, y]);
 
                 c.ReadXml(reader);
-            } 
+            }
             while (reader.ReadToNextSibling("Character"));
         }
     }
@@ -324,7 +360,7 @@ public class World : IXmlSerializable
 
                 Structure structure = PlaceStructure(reader.GetAttribute("objectType"), tiles[x, y]);
                 structure.ReadXml(reader);
-            } 
+            }
             while (reader.ReadToNextSibling("Structure"));
         }
     }

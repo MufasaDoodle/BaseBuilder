@@ -33,6 +33,8 @@ public class Tile : IXmlSerializable
     public LooseObject LooseObject { get; protected set; }
     public Structure Structure { get; protected set; }
 
+    public Room room;
+
     public Job pendingStructureJob;
 
     Action<Tile> tileChanged;
@@ -176,6 +178,23 @@ public class Tile : IXmlSerializable
         }
 
         return Enterability.Yes;
+    }
+
+    public Tile North()
+    {
+        return World.GetTileAt(X, Y + 1);
+    }
+    public Tile South()
+    {
+        return World.GetTileAt(X, Y - 1);
+    }
+    public Tile East()
+    {
+        return World.GetTileAt(X + 1, Y);
+    }
+    public Tile West()
+    {
+        return World.GetTileAt(X - 1, Y);
     }
 
     // SERIALIZATION

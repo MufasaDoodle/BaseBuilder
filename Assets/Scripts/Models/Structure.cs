@@ -34,6 +34,8 @@ public class Structure : IXmlSerializable
     //IF MOVEMENT COST = 0, TILE IS IMPASSIBLE. fx walls
     public float MovementCost { get; protected set; }
 
+    public bool RoomEnclosure { get; protected set; }
+
     //fx, sofa might be 3x2 (graphics may only occupy 3x1, but the extra space is for leg room)
     int width;
     int height;
@@ -53,6 +55,7 @@ public class Structure : IXmlSerializable
     {
         this.ObjectType = other.ObjectType;
         this.MovementCost = other.MovementCost;
+        this.RoomEnclosure = other.RoomEnclosure;
         this.width = other.width;
         this.height = other.height;
         this.LinksToNeighbour = other.LinksToNeighbour;
@@ -71,10 +74,11 @@ public class Structure : IXmlSerializable
         return new Structure(this);
     }
 
-    public Structure (string objectType, float movementCost = 1f, int width = 1, int height = 1, bool linksToNeighbour = false)
+    public Structure (string objectType, float movementCost = 1f, int width = 1, int height = 1, bool linksToNeighbour = false, bool roomEnclosure = false)
     {
         this.ObjectType = objectType;
         this.MovementCost = movementCost;
+        this.RoomEnclosure = roomEnclosure;
         this.width = width;
         this.height = height;
         this.LinksToNeighbour = linksToNeighbour;
