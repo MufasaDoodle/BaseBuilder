@@ -8,8 +8,8 @@ using System.Xml.Schema;
 
 public class Structure : IXmlSerializable
 {
-    public Dictionary<string, float> structureParameters;
-    public Action<Structure, float> updateActions;
+    protected Dictionary<string, float> structureParameters;
+    protected Action<Structure, float> updateActions;
 
     public Func<Structure, Enterability> isEnterable;
 
@@ -155,7 +155,7 @@ public class Structure : IXmlSerializable
         return funcPositionValidation(t);
     }
 
-    public bool __IsValidPosition(Tile t)
+    protected bool __IsValidPosition(Tile t)
     {
         //check if tile is a floor or other invalid tiles
         if(t.Type != TileType.Floor)
@@ -172,15 +172,37 @@ public class Structure : IXmlSerializable
         return true;
     }
 
-    public bool __IsValidPosition_Door(Tile t)
+    public float GetParameter(string key, float default_value = 0)
     {
-        //make sure we have a pair of E/W walls or N/S walls to ensure valid door placement
-        if (__IsValidPosition(t) == false)
+        if (structureParameters.ContainsKey(key) == false)
         {
-            return false;
+            return default_value;
         }
+        return structureParameters[key];
+    }
 
-        return true;
+    public void SetParameter(string key, float value)
+    {
+        structureParameters[key] = value;
+    }
+
+    public void ChangeParameter(string key, float value)
+    {
+        if (structureParameters.ContainsKey(key) == false)
+        {
+            //structureParameters[key] = value;
+            return;
+        }
+        structureParameters[key] += value;
+    }
+
+    public void RegisterUpdateAction(Action<Structure, float> a)
+    {
+        updateActions += a;
+    }
+    public void UnregisterUpdateAction(Action<Structure, float> a)
+    {
+        updateActions -= a;
     }
 
     public void RegisterOnChanged(Action<Structure> callbackFunc)

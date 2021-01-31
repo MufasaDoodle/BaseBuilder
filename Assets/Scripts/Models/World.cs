@@ -32,7 +32,7 @@ public class World : IXmlSerializable
     {
         SetupWorld(width, height);
 
-        Character c = CreateCharacter(GetTileAt(Width / 2, Height / 2));
+        CreateCharacter(GetTileAt(Width / 2, Height / 2));
     }
 
     public Room GetOutsideRoom()
@@ -47,7 +47,7 @@ public class World : IXmlSerializable
 
     public void DeleteRoom(Room r)
     {
-        if(r == GetOutsideRoom())
+        if (r == GetOutsideRoom())
         {
             Debug.LogError($"Tried to delete outside room");
             return;
@@ -123,9 +123,9 @@ public class World : IXmlSerializable
         structurePrototypes.Add("Door", new Structure("Door", 1f, 1, 1, false, true));
 
         //params
-        structurePrototypes["Door"].structureParameters["openness"] = 0;
-        structurePrototypes["Door"].structureParameters["is_opening"] = 0;
-        structurePrototypes["Door"].updateActions += StructureActions.Door_UpdateAction;
+        structurePrototypes["Door"].SetParameter("openness", 0);
+        structurePrototypes["Door"].SetParameter("is_opening", 0);
+        structurePrototypes["Door"].RegisterUpdateAction(StructureActions.Door_UpdateAction);
         structurePrototypes["Door"].isEnterable = StructureActions.Door_IsEnterable;
     }
 

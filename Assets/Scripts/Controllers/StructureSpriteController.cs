@@ -86,17 +86,17 @@ public class StructureSpriteController : MonoBehaviour
             //todo: all hardcoded for now, fix later
             if (structure.ObjectType == "Door")
             {
-                if (structure.structureParameters["openness"] < 0.1f)
+                if (structure.GetParameter("openness") < 0.1f)
                 {
                     //door is closed
                     spriteName = "Door";
                 }
-                else if (structure.structureParameters["openness"] < 0.5f)
+                else if (structure.GetParameter("openness") < 0.5f)
                 {
                     //door is a bit open
                     spriteName = "Door_openness_1";
                 }
-                else if (structure.structureParameters["openness"] < 0.9f)
+                else if (structure.GetParameter("openness") < 0.9f)
                 {
                     //door is a lot open
                     spriteName = "Door_openness_2";
